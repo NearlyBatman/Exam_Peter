@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import AddSignature from "./AddSignature";
+import moment from "moment";
 
 class Suggestion extends Component{
     render()
@@ -11,7 +12,7 @@ class Suggestion extends Component{
         if(submission){
              content = submission.suggestion;
              for(let i = 0; i < submission.signatures.length; i++){
-                 signatures.push(<li>{submission.signatures[i].signature} {submission.signatures[i].meh}</li>);
+                 signatures.push(<li>{submission.signatures[i].name} {moment(submission.signatures[i].date).format('d MMMM, YYYY')}</li>);
              }
         }
         return(

@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {Router} from '@reach/router';
 import Suggestions from "./Suggestions";
 import Suggestion from "./Suggestion";
+import Login from "./Login";
 
 class App extends Component{
   constructor(props){
@@ -22,32 +23,12 @@ class App extends Component{
       submissions: data
     })
   }
-  /*
-           {suggestion: "This is a test", id: 0, signatures: [
-             {signature: "Kalle", meh: 42},
-             {signature: "Helle", meh: 45},
-             {signature: "Johnny", meh: 86}]},
-         {suggestion: "This is another test", id: 1, signatures: [
-             {signature: "Pelle", meh: 56},
-             {signature: "Malle", meh: 89},
-             {signature: "Mulle", meh: 22}]},
-         {suggestion: "This is the last test", id: 2, signatures: [
-                 {signature: "Talle", meh: 67},
-                 {signature: "Jalle", meh: 17},
-                 {signature: "Tjalle", meh: 97}]}
-   submitSuggest(suggest){
-       this.state.submissions.push({suggestion: suggest, id: this.state.submissions.length+1, signatures: []})
- }
-*/
+
   getSubmission(id){
-    const submission = this.state.submissions.find(q => q.id === parseInt(id));
+    const submission = this.state.submissions.find(q => q._id === id);
     return submission;
   }
-  addSignature(id, text){
-    let test = this.state.submissions.find(q => q.id === parseInt(id));
-    test.signatures.push({signature: text, meh: 2});
-    //submission.signatures.push({signature: text, meh: 2})
-  }
+
   async submitSuggest(suggest){
     console.log(suggest);
     const url ='api/addsuggestion';
@@ -61,8 +42,62 @@ class App extends Component{
       })
     });
     const data = await response.json();
+    await this.getData();
     console.log(data);
   }
+
+  async addSignature(id, text){
+    console.log(id, text);
+    const url = `/api/suggestions/${id}/signature`;
+    console.log(url);
+    await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        text: text
+      })
+    });
+  }
+  async register(user){
+    console.log(user.first_name);
+    const url = '/api/register';
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        password: user.password
+      })
+    });
+    await response.json();
+    console.log("Login succes");
+  }
+
+  async login(user){
+    console.log(user.email);
+    const url ='/api/login';
+    const response = await fetch(url,{
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        email: user.email,
+        password: user.password
+      })
+    })
+    //await localStorage.setItem('userToken', response.token)
+    let data = await response.json();
+    await localStorage.setItem('userToken', data);
+    console.log(data)
+  }
+
   render(){
     return(
         <>
@@ -76,6 +111,10 @@ class App extends Component{
                         getSubmission={id => this.getSubmission(id)}
                         addSignature={(id, text) => this.addSignature(id, text)}
             ></Suggestion>
+            <Login path="/login"
+                   register={user =>this.register(user)}
+                   login={user => this.login(user)}
+            ></Login>
           </Router>
         </>
     )
