@@ -3,6 +3,10 @@ import {Router} from '@reach/router';
 import Suggestions from "./Suggestions";
 import Suggestion from "./Suggestion";
 import Login from "./Login";
+import Profile from "./Profile";
+import jwt from 'jsonwebtoken';
+import {Link, navigate} from '@reach/router';
+
 
 class App extends Component{
   constructor(props){
@@ -43,22 +47,26 @@ class App extends Component{
     });
     const data = await response.json();
     await this.getData();
-    console.log(data);
   }
 
   async addSignature(id, text){
-    console.log(id, text);
+    let decoder = jwt.decode(localStorage.userToken);
+    if(text != decoder.first_name){
+      alert("Names does not match");
+      return;
+    }
     const url = `/api/suggestions/${id}/signature`;
-    console.log(url);
-    await fetch(url, {
+    const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json'
       },
       method: 'POST',
       body: JSON.stringify({
-        text: text
+        text: text,
+        email: decoder.email
       })
     });
+    const data = await response.json();
   }
   async register(user){
     console.log(user.first_name);
@@ -75,12 +83,20 @@ class App extends Component{
         password: user.password
       })
     });
-    await response.json();
-    console.log("Login succes");
+    let data = await response.json();
+    let kek = JSON.stringify(data);
+    if(kek == `"${user.email}"`){
+      console.log("woohoo");
+      alert("Register: Success");
+      await this.getData();
+    }
+    else{
+      alert("Email already in use");
+      return
+    }
   }
 
   async login(user){
-    console.log(user.email);
     const url ='/api/login';
     const response = await fetch(url,{
       headers: {
@@ -91,11 +107,17 @@ class App extends Component{
         email: user.email,
         password: user.password
       })
-    })
+    });
     //await localStorage.setItem('userToken', response.token)
     let data = await response.json();
+    try{
+      jwt.verify(data, 'secret')
+    } catch(err){
+      alert("Auth failed")
+      return
+    }
     await localStorage.setItem('userToken', data);
-    console.log(data)
+    await this.getData();
   }
 
   render(){
@@ -115,6 +137,8 @@ class App extends Component{
                    register={user =>this.register(user)}
                    login={user => this.login(user)}
             ></Login>
+            <Profile path="/profile"
+            ></Profile>
           </Router>
         </>
     )

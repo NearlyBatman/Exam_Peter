@@ -24,7 +24,8 @@ const userSchema = new mongoose.Schema({
 const submissionSchema = new mongoose.Schema({
     suggestion: String,
     signatures:[{
-        name: String,
+        first_name: String,
+        email: String,
         date: Date
     }]
 });
@@ -47,15 +48,34 @@ app.post('/api/addsuggestion', async (req, res) => {
     const text = req.body.suggestion;
     let subHold = new Submission({suggestion: text, signatures: []});
     subHold.save();
+    res.json({message: "Worked"});
 });
 
 
 app.post('/api/suggestions/:id/signature', async (req, res)=>{
     let id = req.params.id;
     let text = req.body.text;
-    let signature = await Submission.findById(id);
-    signature.signatures.push({name: text, date: Date.now()});
-    signature.save();
+    let mail = req.body.email;
+    let holder = await Submission.findById(id);
+    holder.signatures.push({first_name: text, email: mail, date: Date.now()});
+    holder.save();
+    res.json({message: "Saved"})
+    /*
+
+signature.signatures.findOne({
+    email: req.body.email
+})
+    .then(user => {
+        if(!user){
+                   user.signatures.push({first_name: req.body.text, email: req.body.email, date: Date.now()});
+                    user.save();
+        }
+        else{
+        }
+    })
+    })
+
+ */
 });
 
 app.post('/api/register', async (req, res) =>{
@@ -71,10 +91,10 @@ app.post('/api/register', async (req, res) =>{
        .then(user => {
            if(!user){
                bcrypt.hash(req.body.password, 5, (err, hash) =>{
-                   userData.password = hash
+                   userData.password = hash;
                    User.create(userData)
                        .then(user => {
-                           res.json({status: user.email + ' registered!'})
+                           res.json(user.email)
                        })
                        .catch(err => {
                            res.send('error: ' + err)
@@ -101,16 +121,16 @@ app.post('/api/login', async (req, res) => {
                         first_name: user.first_name,
                         last_name: user.last_name,
                         email: user.email
-                    }
+                    };
                     let token = jwt.sign(payload, 'secret', {
-                        expiresIn: "4m"
-                    })
+                        expiresIn: 600
+                    });
                     res.json(token)
                 }else{
-                    res.json({error: "Wrong mail or password"})
+                    res.status(401).json({message: "Auth failed"});
                 }
             }else{
-                res.json({error: "User does not exist"})
+                res.status(401).json({message: "Auth failed"});
             }
         })
         .catch(err => {

@@ -8,7 +8,7 @@ class Register extends Component{
             last_name:"",
             email:"",
             password:""
-        }
+        };
         this.onChange = this.onChange.bind(this);
         this.register = this.register.bind(this);
     }
@@ -17,15 +17,26 @@ class Register extends Component{
             [event.target.name]: event.target.value
         })
     }
+
+    emailCheck(email){
+        const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(email);
+    }
+
     register(event){
         event.preventDefault();
-        const User = {
+        const user = {
             first_name: this.state.first_name,
             last_name: this.state.last_name,
             email: this.state.email,
             password: this.state.password
         };
-        this.props.register(User)
+        if(this.emailCheck(user.email)){
+            this.props.register(user)
+        }
+        else{
+            alert("Not a valid email format")
+        }
     }
 
     render(){
@@ -47,6 +58,7 @@ class Register extends Component{
                            onChange={this.onChange}/><br/>
                     <button onClick={_ => this.register()}>Register</button>
                 </form>
+
 
             </>
         )
