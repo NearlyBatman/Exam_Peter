@@ -48,7 +48,10 @@ app.post('/api/addsuggestion', async (req, res) => {
     const text = req.body.suggestion;
     let subHold = new Submission({suggestion: text, signatures: []});
     subHold.save();
-    res.json({message: "Worked"});
+    res.json({message: "Success"})
+        .catch(err => {
+            res.json('error' + err)
+        })
 });
 
 
@@ -59,9 +62,11 @@ app.post('/api/suggestions/:id/signature', async (req, res)=>{
     let holder = await Submission.findById(id);
     holder.signatures.push({first_name: text, email: mail, date: Date.now()});
     holder.save();
-    res.json({message: "Saved"})
+    res.json({message: "Success"})
+        .catch(err => {
+            res.json('error' + err)
+        })
     /*
-
 signature.signatures.findOne({
     email: req.body.email
 })
@@ -74,7 +79,33 @@ signature.signatures.findOne({
         }
     })
     })
+    for(let i = 0; i < holder.signatures.length; i++){
+        if(holder.signatures[i].email == mail){
+            res.json({message: "Test 1"})
+        }
+        else{
+            res.json({message: "Test 2"})
+        }
+    }
 
+
+        holder.findOne ({
+        email: mail
+    }).then(res.json({message: "test"})).
+    catch(error =>
+    {res.send('error' + error)});
+
+    holder.findOne({
+        "signatures.first_name": text})
+        .then(test => {
+            res.json({message: test})
+        }).
+    catch(err => {
+            res.json('error' + err)
+    })
+        .catch(err => {
+            res.json('erorr'  + err)
+        });
  */
 });
 

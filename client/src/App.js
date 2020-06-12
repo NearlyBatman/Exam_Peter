@@ -45,7 +45,7 @@ class App extends Component{
         suggestion: suggest
       })
     });
-    const data = await response.json();
+    const data = await response.json()
     await this.getData();
   }
 
@@ -65,8 +65,15 @@ class App extends Component{
         text: text,
         email: decoder.email
       })
+    })
+        .catch(err => {
+      console.log(err)
     });
-    const data = await response.json();
+    const data = await response.json()
+        .catch(err => {
+          console.log(err)
+        });
+    console.log(data);
   }
   async register(user){
     console.log(user.first_name);
